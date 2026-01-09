@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HydroHelper - Гидропоника для начинающих</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-seedling"></i>
+                <span>HydroHelper</span>
+            </div>
+            <div class="nav-links">
+                <a href="#constructor" class="active">Конструктор</a>
+                <a href="#journal">Мой сад</a>
+                <a href="#knowledge">База знаний</a>
+                <a href="#calculators">Калькуляторы</a>
+                <a href="#diagnostic">Диагностика</a>
+                <div class="auth-buttons">
+                    <button id="login-btn" class="btn-auth">Войти</button>
+                    <button id="register-btn" class="btn-auth btn-secondary">Регистрация</button>
+                    <div id="user-menu" class="hidden">
+                        <span id="username-display" class="username-display"></span>
+                        <button id="logout-btn" class="btn-auth">Выйти</button>
+                    </div>
+                </div>
+            </div>
+            <button class="menu-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Модальное окно регистрации/входа -->
+    <div id="auth-modal" class="modal hidden">
+        <div class="modal-content auth-modal">
+            <span class="modal-close auth-close">&times;</span>
+            <div class="auth-tabs">
+                <button class="auth-tab active" data-tab="login">Вход</button>
+                <button class="auth-tab" data-tab="register">Регистрация</button>
+            </div>
+            
+            <div class="auth-forms">
+                <!-- Форма входа -->
+                <form id="login-form" class="auth-form active">
+                    <h3>Вход в аккаунт</h3>
+                    <div class="form-group">
+                        <label for="login-email">Email</label>
+                        <input type="email" id="login-email" placeholder="Ваш email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Пароль</label>
+                        <input type="password" id="login-password" placeholder="Ваш пароль" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Войти</button>
+                    <div class="auth-links">
+                        <a href="#" id="forgot-password">Забыли пароль?</a>
+                    </div>
+                </form>
+                
+                <!-- Форма регистрации -->
+                <form id="register-form" class="auth-form">
+                    <h3>Создание аккаунта</h3>
+                    <div class="form-group">
+                        <label for="register-name">Имя</label>
+                        <input type="text" id="register-name" placeholder="Ваше имя" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">Email</label>
+                        <input type="email" id="register-email" placeholder="Ваш email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Пароль</label>
+                        <input type="password" id="register-password" placeholder="Придумайте пароль" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="register-confirm">Подтвердите пароль</label>
+                        <input type="password" id="register-confirm" placeholder="Повторите пароль" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Зарегистрироваться</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Личный кабинет -->
+    <div id="profile-modal" class="modal hidden">
+        <div class="modal-content profile-modal">
+            <span class="modal-close profile-close">&times;</span>
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h2 id="profile-name">Иван Иванов</h2>
+                <p id="profile-email">ivan@example.com</p>
+            </div>
+            
+            <div class="profile-stats">
+                <div class="stat-item">
+                    <i class="fas fa-seedling"></i>
+                    <div>
+                        <h3 id="plants-count">0</h3>
+                        <p>Растений</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <div>
+                        <h3 id="days-active">1</h3>
+                        <p>Дней с нами</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-trophy"></i>
+                    <div>
+                        <h3 id="user-level">Новичок</h3>
+                        <p>Уровень</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-sections">
+                <div class="profile-section">
+                    <h3><i class="fas fa-cog"></i> Настройки профиля</h3>
+                    <button id="edit-profile-btn" class="btn-secondary">Редактировать профиль</button>
+                    <button id="export-data-btn" class="btn-secondary">Экспорт данных</button>
+                </div>
+                
+                <div class="profile-section">
+                    <h3><i class="fas fa-chart-line"></i> Моя статистика</h3>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <h4>Успешные посадки</h4>
+                            <p id="successful-plants">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Средний рост</h4>
+                            <p id="avg-growth">0 дней</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Всего фото</h4>
+                            <p id="total-photos">0</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Активных чек-листов</h4>
+                            <p id="active-checklists">0</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-section">
+                    <h3><i class="fas fa-award"></i> Достижения</h3>
+                    <div class="achievements">
+                        <div class="achievement" data-achieved="false">
+                            <i class="fas fa-seedling"></i>
+                            <span>Первое растение</span>
+                        </div>
+                        <div class="achievement" data-achieved="false">
+                            <i class="fas fa-leaf"></i>
+                            <span>5 растений</span>
+                        </div>
+                        <div class="achievement" data-achieved="false">
+                            <i class="fas fa-tint"></i>
+                            <span>Месяц с нами</span>
+                        </div>
+                        <div class="achievement" data-achieved="false">
+                            <i class="fas fa-calculator"></i>
+                            <span>10 расчетов</span>
+                        </div>
+                        <div class="achievement" data-achieved="false">
+                            <i class="fas fa-stethoscope"></i>
+                            <span>Диагностика</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Герой-секция -->
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Домашняя гидропоника <span class="highlight">без сложностей</span></h1>
+            <p>Пошаговые инструкции, напоминания и поддержка для вашего первого урожая</p>
+            <div class="hero-buttons">
+                <a href="#constructor" class="btn-primary">Начать выращивать</a>
+                <button id="hero-auth-btn" class="btn-secondary">Создать аккаунт</button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="plant-icon"><i class="fas fa-leaf"></i></div>
+            <div class="plant-icon"><i class="fas fa-apple-alt"></i></div>
+            <div class="plant-icon"><i class="fas fa-carrot"></i></div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="container">
+        <!-- Конструктор -->
+        <section id="constructor" class="section">
+            <h2><i class="fas fa-cogs"></i> Конструктор системы</h2>
+            <p class="section-subtitle">Ответьте на 3 вопроса и получите готовый план действий</p>
+            
+            <div class="wizard">
+                <div class="wizard-steps">
+                    <div class="step active" data-step="1">1</div>
+                    <div class="step" data-step="2">2</div>
+                    <div class="step" data-step="3">3</div>
+                </div>
+                
+                <div id="step-1" class="wizard-content active">
+                    <h3>Что вы хотите выращивать?</h3>
+                    <div class="options-grid">
+                        <div class="option" data-value="lettuce">
+                            <i class="fas fa-leaf"></i>
+                            <span>Салат и зелень</span>
+                        </div>
+                        <div class="option" data-value="herbs">
+                            <i class="fas fa-spa"></i>
+                            <span>Пряные травы</span>
+                        </div>
+                        <div class="option" data-value="tomato">
+                            <i class="fas fa-apple-alt"></i>
+                            <span>Томаты и перцы</span>
+                        </div>
+                        <div class="option" data-value="strawberry">
+                            <i class="fas fa-star"></i>
+                            <span>Клубнику</span>
+                        </div>
+                    </div>
+                    <button class="btn-next btn-primary">Далее <i class="fas fa-arrow-right"></i></button>
+                </div>
+                
+                <div id="step-2" class="wizard-content">
+                    <h3>Где будет находиться ваша ферма?</h3>
+                    <div class="options-grid">
+                        <div class="option" data-value="windowsill">
+                            <i class="fas fa-window-maximize"></i>
+                            <span>На подоконнике</span>
+                        </div>
+                        <div class="option" data-value="balcony">
+                            <i class="fas fa-home"></i>
+                            <span>На балконе</span>
+                        </div>
+                        <div class="option" data-value="garage">
+                            <i class="fas fa-warehouse"></i>
+                            <span>В гараже/подвале</span>
+                        </div>
+                        <div class="option" data-value="room">
+                            <i class="fas fa-couch"></i>
+                            <span>В комнате</span>
+                        </div>
+                    </div>
+                    <div class="wizard-buttons">
+                        <button class="btn-prev"><i class="fas fa-arrow-left"></i> Назад</button>
+                        <button class="btn-next btn-primary">Далее <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+                
+                <div id="step-3" class="wizard-content">
+                    <h3>Ваш бюджет на старт?</h3>
+                    <div class="options-grid">
+                        <div class="option" data-value="minimal">
+                            <i class="fas fa-ruble-sign"></i>
+                            <span>Минимальный (до 3000₽)</span>
+                        </div>
+                        <div class="option" data-value="medium">
+                            <i class="fas fa-ruble-sign"></i><i class="fas fa-ruble-sign"></i>
+                            <span>Средний (3000-10000₽)</span>
+                        </div>
+                        <div class="option" data-value="unlimited">
+                            <i class="fas fa-crown"></i>
+                            <span>Не экономлю</span>
+                        </div>
+                    </div>
+                    <div class="wizard-buttons">
+                        <button class="btn-prev"><i class="fas fa-arrow-left"></i> Назад</button>
+                        <button class="btn-submit btn-primary">Получить план <i class="fas fa-magic"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="recommendation" class="recommendation hidden">
+                <h3><i class="fas fa-clipboard-check"></i> Ваш персональный план</h3>
+                <div class="recommendation-content">
+                    <div id="plan-details"></div>
+                    <div class="materials-list">
+                        <h4><i class="fas fa-shopping-cart"></i> Что вам понадобится:</h4>
+                        <ul id="materials-list"></ul>
+                    </div>
+                    <div class="recommendation-actions">
+                        <button id="start-journal" class="btn-primary">Добавить в мой сад <i class="fas fa-plus"></i></button>
+                        <button id="save-plan" class="btn-secondary">Сохранить план</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Мой сад -->
+        <section id="journal" class="section">
+            <h2><i class="fas fa-book"></i> Мой сад</h2>
+            <p class="section-subtitle">Следите за прогрессом ваших растений</p>
+            
+            <div id="auth-required" class="empty-state hidden">
+                <i class="fas fa-user-lock"></i>
+                <h3>Требуется авторизация</h3>
+                <p>Войдите в аккаунт, чтобы сохранять растения и отслеживать их рост</p>
+                <button id="auth-from-journal" class="btn-primary">Войти в аккаунт</button>
+            </div>
+            
+            <div id="plants-section">
+                <div id="no-plants" class="empty-state">
+                    <i class="fas fa-seedling"></i>
+                    <h3>Ваш сад пуст</h3>
+                    <p>Добавьте первое растение с помощью конструктора или вручную!</p>
+                </div>
+                
+                <div id="plants-container" class="plants-grid hidden">
+                    <!-- Растения будут добавляться динамически -->
+                </div>
+                
+                <div class="add-plant-card">
+                    <i class="fas fa-plus-circle"></i>
+                    <h3>Добавить растение вручную</h3>
+                    <div class="form-group">
+                        <input type="text" id="plant-name" placeholder="Название растения" required>
+                        <select id="plant-type-select">
+                            <option value="other">Выберите тип</option>
+                            <option value="lettuce">Салат</option>
+                            <option value="herbs">Травы</option>
+                            <option value="tomato">Томаты/Перцы</option>
+                            <option value="strawberry">Клубника</option>
+                            <option value="other">Другое</option>
+                        </select>
+                        <input type="date" id="plant-date" required>
+                        <button id="add-plant-btn" class="btn-primary">Добавить</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- База знаний -->
+        <section id="knowledge" class="section">
+            <h2><i class="fas fa-graduation-cap"></i> База знаний</h2>
+            <p class="section-subtitle">Простые ответы на сложные вопросы</p>
+            
+            <div class="knowledge-cards">
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <h3>Что такое pH и как его измерить?</h3>
+                    <p>pH - это мера кислотности воды. Для растений нужен уровень 5.5-6.5. Используйте капельные тесты или электронный pH-метр.</p>
+                    <button class="card-btn" data-knowledge="ph">Подробнее</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h3>Сколько нужно света?</h3>
+                    <p>Зелени нужно 12-14 часов света в день. На подоконнике может не хватать - добавьте фитолампу. Избегайте прямого солнца летом.</p>
+                    <button class="card-btn" data-knowledge="light">Подробнее</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3>5 ошибок новичков</h3>
+                    <ol>
+                        <li>Слишком много удобрений</li>
+                        <li>Мало кислорода в воде</li>
+                        <li>Неправильный pH</li>
+                        <li>Слишком близко растения</li>
+                        <li>Не менять раствор</li>
+                    </ol>
+                    <button class="card-btn" data-knowledge="mistakes">Подробнее</button>
+                </div>
+                
+                <div class="card">
+                    <div class="card-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3>Признаки проблем</h3>
+                    <p>Желтые листья? Проверьте питание. Вялые растения? Проверьте воду и температуру. Медленный рост? Добавьте свет.</p>
+                    <button class="card-btn diagnostic-open">Диагностика</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Диагностика проблем -->
+        <section id="diagnostic" class="section">
+            <h2><i class="fas fa-stethoscope"></i> Диагностика проблем</h2>
+            <p class="section-subtitle">Определите проблему с растением и получите рекомендации</p>
+            
+            <div class="diagnostic-starter">
+                <div class="diagnostic-image">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <div class="diagnostic-info">
+                    <h3>Не знаете, что с вашим растением?</h3>
+                    <p>Ответьте на несколько вопросов, и мы поможем определить проблему</p>
+                    <button id="start-diagnostic" class="btn-primary">Начать диагностику <i class="fas fa-play"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Модальное окно диагностики -->
+        <div id="diagnostic-modal" class="modal hidden">
+            <div class="modal-content diagnostic-modal">
+                <span class="modal-close diagnostic-close">&times;</span>
+                <h2><i class="fas fa-stethoscope"></i> Диагностика проблем</h2>
+                
+                <div class="diagnostic-progress">
+                    <div class="progress-step active" data-step="1"></div>
+                    <div class="progress-step" data-step="2"></div>
+                    <div class="progress-step" data-step="3"></div>
+                </div>
+                
+                <div class="diagnostic-step active" id="step-1-d">
+                    <h3>Что происходит с растением?</h3>
+                    <div class="options-vertical">
+                        <button class="option-btn" data-next="step-2-d" data-problem="yellow">
+                            <i class="fas fa-leaf"></i>
+                            <span>Листья желтеют</span>
+                        </button>
+                        <button class="option-btn" data-next="step-2-d" data-problem="wilted">
+                            <i class="fas fa-tint"></i>
+                            <span>Листья вялые</span>
+                        </button>
+                        <button class="option-btn" data-next="step-2-d" data-problem="spots">
+                            <i class="fas fa-circle"></i>
+                            <span>Пятна на листьях</span>
+                        </button>
+                        <button class="option-btn" data-next="step-2-d" data-problem="nogrowth">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Растение не растет</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="diagnostic-step" id="step-2-d">
+                    <h3>Где появляется проблема?</h3>
+                    <div class="options-vertical">
+                        <button class="option-btn" data-solution="nitrogen">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>На старых листьях снизу</span>
+                        </button>
+                        <button class="option-btn" data-solution="light">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>На новых листьях сверху</span>
+                        </button>
+                        <button class="option-btn" data-solution="fungus">
+                            <i class="fas fa-expand"></i>
+                            <span>Везде равномерно</span>
+                        </button>
+                    </div>
+                    <button class="btn-prev-diagnostic"><i class="fas fa-arrow-left"></i> Назад</button>
+                </div>
+                
+                <div class="diagnostic-step" id="step-3-d">
+                    <h3>Как давно появилась проблема?</h3>
+                    <div class="options-vertical">
+                        <button class="option-btn" data-solution="recent">
+                            <i class="fas fa-clock"></i>
+                            <span>Недавно (1-2 дня)</span>
+                        </button>
+                        <button class="option-btn" data-solution="medium">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>Несколько дней (3-7)</span>
+                        </button>
+                        <button class="option-btn" data-solution="long">
+                            <i class="fas fa-calendar-week"></i>
+                            <span>Долгое время (более недели)</span>
+                        </button>
+                    </div>
+                    <button class="btn-prev-diagnostic"><i class="fas fa-arrow-left"></i> Назад</button>
+                </div>
+                
+                <div class="diagnostic-solution hidden" id="solution-display">
+                    <div class="solution-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3>Рекомендация:</h3>
+                    <p id="solution-text"></p>
+                    <div class="solution-actions">
+                        <button class="btn-primary" id="save-diagnostic">Сохранить результат</button>
+                        <button class="btn-secondary" id="restart-diagnostic">Начать заново</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Калькуляторы -->
+        <section id="calculators" class="section">
+            <h2><i class="fas fa-calculator"></i> Калькуляторы</h2>
+            <p class="section-subtitle">Полезные инструменты для вашей фермы</p>
+            
+            <div class="calculators-grid">
+                <div class="calculator-card">
+                    <div class="calculator-icon">
+                        <i class="fas fa-flask"></i>
+                    </div>
+                    <h3>Калькулятор питательного раствора</h3>
+                    <div class="calculator-form">
+                        <div class="form-group">
+                            <label for="water-volume">Объем воды (литры):</label>
+                            <div class="range-container">
+                                <input type="range" id="water-volume" min="1" max="50" value="10">
+                                <span id="volume-display">10 л</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="plant-type">Тип растения:</label>
+                            <select id="plant-type">
+                                <option value="lettuce">Салат и зелень</option>
+                                <option value="herbs">Травы</option>
+                                <option value="tomato">Томаты/Перцы</option>
+                                <option value="strawberry">Клубника</option>
+                            </select>
+                        </div>
+                        <button id="calculate-btn" class="btn-primary">Рассчитать <i class="fas fa-calculator"></i></button>
+                    </div>
+                    <div id="calculation-result" class="hidden">
+                        <h4>Ваш рецепт:</h4>
+                        <p id="recipe-result"></p>
+                        <div class="tip">
+                            <i class="fas fa-info-circle"></i> Разводите удобрения в отдельной емкости перед добавлением в систему
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="calculator-card">
+                    <div class="calculator-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h3>Еженедельный чек-лист</h3>
+                    <div class="checklist">
+                        <label class="checkbox">
+                            <input type="checkbox" data-task="water">
+                            <span>Проверить уровень воды</span>
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" data-task="ph">
+                            <span>Измерить pH (идеально 5.8-6.2)</span>
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" data-task="solution">
+                            <span>Долить/заменить раствор</span>
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" data-task="roots">
+                            <span>Проверить корни (белые = здоровые)</span>
+                        </label>
+                        <label class="checkbox">
+                            <input type="checkbox" data-task="leaves">
+                            <span>Протереть листья от пыли</span>
+                        </label>
+                    </div>
+                    <div class="checklist-actions">
+                        <button id="reset-checklist" class="btn-secondary">Сбросить на неделю</button>
+                        <button id="save-checklist" class="btn-primary">Сохранить</button>
+                    </div>
+                    <div id="checklist-progress" class="progress-container hidden">
+                        <div class="progress-label">
+                            <span>Прогресс:</span>
+                            <span id="checklist-percent">0%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="checklist-progress-bar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="light-calculator">
+                <h3><i class="fas fa-sun"></i> Калькулятор освещенности</h3>
+                <div class="calculator-form">
+                    <div class="form-group">
+                        <label for="window-direction">Окно выходит на:</label>
+                        <select id="window-direction">
+                            <option value="south">Юг</option>
+                            <option value="southeast">Юго-восток</option>
+                            <option value="east">Восток</option>
+                            <option value="west">Запад</option>
+                            <option value="north">Север</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="plant-light">Тип растения:</label>
+                        <select id="plant-light">
+                            <option value="low">Теневыносливые (салат, травы)</option>
+                            <option value="medium">Средняя светолюбивость (томаты, перец)</option>
+                            <option value="high">Светолюбивые (клубника, огурцы)</option>
+                        </select>
+                    </div>
+                    <button id="calculate-light" class="btn-primary">Рассчитать освещение</button>
+                </div>
+                <div id="light-result" class="hidden">
+                    <h4>Рекомендации по освещению:</h4>
+                    <p id="light-recommendation"></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <i class="fas fa-seedling"></i>
+                <span>HydroHelper</span>
+            </div>
+            <div class="footer-links">
+                <a href="#constructor">Конструктор</a>
+                <a href="#journal">Мой сад</a>
+                <a href="#knowledge">База знаний</a>
+                <a href="#calculators">Калькуляторы</a>
+            </div>
+            <p>Сделано с <i class="fas fa-heart"></i> для начинающих гидропонщиков</p>
+            <p class="footer-note">Это демо-версия приложения. Все данные сохраняются в вашем браузере.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

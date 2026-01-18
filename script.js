@@ -684,13 +684,7 @@ const HydroHelper = {
                 difficulty: 'Средняя',
                 harvest: '10-14 недель',
                 tips: 'Любит прохладу. Нужно опыление (можно вручную кисточкой).'
-            },
-            strawberries: {
-                name: 'Земляника',
-                system: 'Система питательного слоя (NFT)',
-                difficulty: 'Средняя',
-                harvest: '8-12 недель',
-                tips: 'Любит прохладу. Нужно опыление (можно вручную кисточкой).'
+            }
         };
         
         const locationData = {
@@ -701,9 +695,9 @@ const HydroHelper = {
         };
         
         const budgetData = {
-            minimal: 'Минимальный (до 5000₽)',
-            medium: 'Средний (5000-15000₽)',
-            unlimited: 'Неограниченный (от 15 000₽)'
+            minimal: 'Минимальный (до 3000₽)',
+            medium: 'Средний (3000-10000₽)',
+            unlimited: 'Неограниченный'
         };
         
         const plant = plantData[this.userSelections.plant] || plantData.lettuce;
@@ -738,8 +732,8 @@ const HydroHelper = {
         // Базовые материалы для всех
         materials.push('Емкость для раствора (10-20 л)');
         materials.push('Субстрат (кокосовое волокно или керамзит)');
-        materials.push('Удобрения для гидропоники (А и В)');
-        materials.push('Семена, желательно, выбирать адаптированные для гидропоники);
+        materials.push('Удобрения для гидропоники (А и Б)');
+        materials.push('Семена или рассада');
         materials.push('pH-тест (жидкость или полоски)');
         
         // Дополнительные материалы в зависимости от бюджета
@@ -747,7 +741,6 @@ const HydroHelper = {
             materials.push('Пластиковые стаканчики с отверстиями');
             materials.push('Воздушный компрессор для аквариума (для DWC)');
         } else if (this.userSelections.budget === 'medium') {
-            materials.push('Диски для проростания семян (кокосовые)');
             materials.push('Горшки для гидропоники (сетчатые)');
             materials.push('Насос и таймер (для периодического затопления)');
             materials.push('Фитолампа (если мало естественного света)');
@@ -801,8 +794,7 @@ const HydroHelper = {
             lettuce: 'Салат',
             herbs: 'Пряные травы',
             tomato: 'Томаты',
-            strawberry: 'Клубника',
-            strawberries: 'Земляника'
+            strawberry: 'Клубника'
         };
         
         const plantName = plantNames[this.userSelections.plant] || 'Мое растение';
@@ -903,7 +895,6 @@ const HydroHelper = {
             if (plant.type === 'herbs') plantIcon = 'fas fa-spa';
             else if (plant.type === 'tomato') plantIcon = 'fas fa-apple-alt';
             else if (plant.type === 'strawberry') plantIcon = 'fas fa-star';
-            else if (plant.type === 'strawberries') plantIcon = 'fas fa-straw';
             
             const plantCard = document.createElement('div');
             plantCard.className = 'plant-card';
@@ -1027,7 +1018,7 @@ const HydroHelper = {
         this.showNotification('Растение удалено', 'info');
     },
     
- // Настройка диагностики
+    // Настройка диагностики
     setupDiagnostic: function() {
         const diagnosticModal = document.getElementById('diagnostic-modal');
         const startDiagnosticBtn = document.getElementById('start-diagnostic');
@@ -1663,8 +1654,4 @@ const HydroHelper = {
 // Инициализация приложения после загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
     HydroHelper.init();
-
 });
-
-
-

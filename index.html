@@ -186,7 +186,7 @@
     <!-- Герой-секция -->
     <header class="hero">
         <div class="hero-content">
-            <h1>Домашняя гидропоника <span class="highlight">без сложностей</span></h1>
+            <h1><span class="highlight">Гидропоника без сложностей</span></h1>
             <p>Пошаговые инструкции, напоминания и поддержка для вашего первого урожая</p>
             <div class="hero-buttons">
                 <a href="#constructor" class="btn-primary">Начать выращивать</a>
@@ -233,6 +233,10 @@
                             <i class="fas fa-star"></i>
                             <span>Клубнику</span>
                         </div>
+                            <div class="option" data-value="strawberries">
+                            <i class="fas fa-star"></i>
+                            <span>Земляника</span>
+                        </div>
                     </div>
                     <button class="btn-next btn-primary">Далее <i class="fas fa-arrow-right"></i></button>
                 </div>
@@ -268,15 +272,15 @@
                     <div class="options-grid">
                         <div class="option" data-value="minimal">
                             <i class="fas fa-ruble-sign"></i>
-                            <span>Минимальный (до 3000₽)</span>
+                            <span>Минимальный (до 5000₽)</span>
                         </div>
                         <div class="option" data-value="medium">
                             <i class="fas fa-ruble-sign"></i><i class="fas fa-ruble-sign"></i>
-                            <span>Средний (3000-10000₽)</span>
+                            <span>Средний (5000-15000₽)</span>
                         </div>
                         <div class="option" data-value="unlimited">
                             <i class="fas fa-crown"></i>
-                            <span>Не экономлю</span>
+                            <span>Не экономлю (от 15000 и больше)</span>
                         </div>
                     </div>
                     <div class="wizard-buttons">
@@ -333,9 +337,10 @@
                         <select id="plant-type-select">
                             <option value="other">Выберите тип</option>
                             <option value="lettuce">Салат</option>
-                            <option value="herbs">Травы</option>
+                            <option value="herbs">Пряные травы</option>
                             <option value="tomato">Томаты/Перцы</option>
                             <option value="strawberry">Клубника</option>
+                            <option value="strawberry">Земляника</option>
                             <option value="other">Другое</option>
                         </select>
                         <input type="date" id="plant-date" required>
@@ -355,8 +360,8 @@
                     <div class="card-icon">
                         <i class="fas fa-tint"></i>
                     </div>
-                    <h3>Что такое pH и как его измерить?</h3>
-                    <p>pH - это мера кислотности воды. Для растений нужен уровень 5.5-6.5. Используйте капельные тесты или электронный pH-метр.</p>
+                    <h3>Что такое pH воды и как его измерить?</h3>
+                    <p>pH - это мера кислотности воды. Для растений оптимальное значение pH должно быть между 5.5-6.5. Используйте капельные тесты или электронный pH-метр.</p>
                     <button class="card-btn" data-knowledge="ph">Подробнее</button>
                 </div>
                 
@@ -365,7 +370,7 @@
                         <i class="fas fa-lightbulb"></i>
                     </div>
                     <h3>Сколько нужно света?</h3>
-                    <p>Зелени нужно 12-14 часов света в день. На подоконнике может не хватать - добавьте фитолампу. Избегайте прямого солнца летом.</p>
+                    <p>Растениям нужно от 12 до 14 часов света в день. Если на подоконнике не хватает освещения, тогда добавьте фитолампу. Избегайте прямых солнечных лучей летом.</p>
                     <button class="card-btn" data-knowledge="light">Подробнее</button>
                 </div>
                 
@@ -375,10 +380,9 @@
                     </div>
                     <h3>5 ошибок новичков</h3>
                     <ol>
-                        <li>Слишком много удобрений</li>
+                        <li>Слишком много минеральных или водорастворимых удобрений</li>
                         <li>Мало кислорода в воде</li>
-                        <li>Неправильный pH</li>
-                        <li>Слишком близко растения</li>
+                        <li>Неправильный pH раствора</li>
                         <li>Не менять раствор</li>
                     </ol>
                     <button class="card-btn" data-knowledge="mistakes">Подробнее</button>
@@ -524,6 +528,7 @@
                                 <option value="herbs">Травы</option>
                                 <option value="tomato">Томаты/Перцы</option>
                                 <option value="strawberry">Клубника</option>
+                                <option value="strawberries">Земляника</option>
                             </select>
                         </div>
                         <button id="calculate-btn" class="btn-primary">Рассчитать <i class="fas fa-calculator"></i></button>
@@ -549,7 +554,7 @@
                         </label>
                         <label class="checkbox">
                             <input type="checkbox" data-task="ph">
-                            <span>Измерить pH (идеально 5.8-6.2)</span>
+                            <span>Измерить pH (идеально 5,5-6,5)</span>
                         </label>
                         <label class="checkbox">
                             <input type="checkbox" data-task="solution">
@@ -586,19 +591,18 @@
                     <div class="form-group">
                         <label for="window-direction">Окно выходит на:</label>
                         <select id="window-direction">
-                            <option value="south">Юг</option>
-                            <option value="southeast">Юго-восток</option>
-                            <option value="east">Восток</option>
-                            <option value="west">Запад</option>
                             <option value="north">Север</option>
+                            <option value="south">Юг</option>                        
+                            <option value="west">Запад</option>
+                            <option value="east">Восток</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="plant-light">Тип растения:</label>
                         <select id="plant-light">
-                            <option value="low">Теневыносливые (салат, травы)</option>
+                            <option value="low">Теневыносливые (салат, пряные травы)</option>
                             <option value="medium">Средняя светолюбивость (томаты, перец)</option>
-                            <option value="high">Светолюбивые (клубника, огурцы)</option>
+                            <option value="high">Светолюбивые (клубника, земляника)</option>
                         </select>
                     </div>
                     <button id="calculate-light" class="btn-primary">Рассчитать освещение</button>
@@ -633,4 +637,5 @@
 </body>
 
 </html>
+
 

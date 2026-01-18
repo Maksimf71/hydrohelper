@@ -1027,7 +1027,7 @@ const HydroHelper = {
         this.showNotification('Растение удалено', 'info');
     },
     
-  // Настройка диагностики
+ // Настройка диагностики
     setupDiagnostic: function() {
         const diagnosticModal = document.getElementById('diagnostic-modal');
         const startDiagnosticBtn = document.getElementById('start-diagnostic');
@@ -1045,770 +1045,125 @@ const HydroHelper = {
             duration: null
         };
         
-    // HTML содержимое для нового окна
-    const getDiagnosticHTML = () => {
-        return `
-        <!DOCTYPE html>
-        <html lang="ru">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Диагностика проблем</title>
-            <style>
-                * {
-                    margin: 0;
-                    padding: 0;
-                    box-sizing: border-box;
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        // Открытие диагностики
+        const openDiagnostic = () => {
+            diagnosticModal.classList.remove('hidden');
+            currentStep = 1;
+            diagnosticData = { problem: null, location: null, duration: null };
+            this.resetDiagnostic();
+        };
+        
+        if (startDiagnosticBtn) {
+            startDiagnosticBtn.addEventListener('click', openDiagnostic);
+        }
+        
+        diagnosticOpenBtns.forEach(btn => {
+            btn.addEventListener('click', openDiagnostic);
+        });
+        
+        // Закрытие диагностики
+        if (diagnosticClose) {
+            diagnosticClose.addEventListener('click', () => {
+                diagnosticModal.classList.add('hidden');
+            });
+        }
+        
+        diagnosticModal.addEventListener('click', (e) => {
+            if (e.target === diagnosticModal) {
+                diagnosticModal.classList.add('hidden');
+            }
+        });
+        
+        // Обработка выбора в диагностике
+        optionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const nextStep = btn.getAttribute('data-next');
+                const solution = btn.getAttribute('data-solution');
+                const problem = btn.getAttribute('data-problem');
+                
+                if (problem) {
+                    diagnosticData.problem = problem;
                 }
                 
-                body {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    min-height: 100vh;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    padding: 20px;
-                }
-                
-                .diagnostic-container {
-                    background: white;
-                    border-radius: 20px;
-                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-                    width: 100%;
-                    max-width: 800px;
-                    min-height: 600px;
-                    overflow: hidden;
-                    position: relative;
-                }
-                
-                .diagnostic-header {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    padding: 30px;
-                    text-align: center;
-                    position: relative;
-                }
-                
-                .diagnostic-title {
-                    font-size: 28px;
-                    font-weight: 600;
-                    margin-bottom: 10px;
-                }
-                
-                .diagnostic-subtitle {
-                    font-size: 16px;
-                    opacity: 0.9;
-                }
-                
-                .close-btn {
-                    position: absolute;
-                    top: 20px;
-                    right: 20px;
-                    background: rgba(255,255,255,0.2);
-                    border: none;
-                    color: white;
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    font-size: 20px;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                }
-                
-                .close-btn:hover {
-                    background: rgba(255,255,255,0.3);
-                    transform: rotate(90deg);
-                }
-                
-                .diagnostic-body {
-                    padding: 40px;
-                    max-height: 500px;
-                    overflow-y: auto;
-                }
-                
-                .progress-bar {
-                    display: flex;
-                    justify-content: center;
-                    gap: 15px;
-                    margin-bottom: 40px;
-                    padding: 0 40px;
-                }
-                
-                .progress-step {
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    background: #e0e0e0;
-                    color: #666;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: 600;
-                    position: relative;
-                    transition: all 0.3s;
-                }
-                
-                .progress-step.active {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    transform: scale(1.1);
-                    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-                }
-                
-                .progress-step:not(:last-child)::after {
-                    content: '';
-                    position: absolute;
-                    top: 50%;
-                    right: -30px;
-                    width: 30px;
-                    height: 2px;
-                    background: #e0e0e0;
-                    transition: all 0.3s;
-                }
-                
-                .progress-step.active:not(:last-child)::after {
-                    background: #667eea;
-                }
-                
-                .diagnostic-step {
-                    display: none;
-                    animation: fadeIn 0.5s ease;
-                }
-                
-                .diagnostic-step.active {
-                    display: block;
-                }
-                
-                .step-title {
-                    font-size: 24px;
-                    color: #333;
-                    margin-bottom: 20px;
-                    text-align: center;
-                }
-                
-                .step-description {
-                    font-size: 16px;
-                    color: #666;
-                    margin-bottom: 30px;
-                    text-align: center;
-                    line-height: 1.5;
-                }
-                
-                .options-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                    gap: 20px;
-                    margin-bottom: 30px;
-                }
-                
-                .option-btn {
-                    background: #f8f9fa;
-                    border: 2px solid #e9ecef;
-                    border-radius: 15px;
-                    padding: 25px 20px;
-                    font-size: 16px;
-                    color: #333;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                    text-align: center;
-                    font-weight: 500;
-                }
-                
-                .option-btn:hover {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border-color: #667eea;
-                    transform: translateY(-5px);
-                    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-                }
-                
-                .navigation-buttons {
-                    display: flex;
-                    justify-content: space-between;
-                    margin-top: 30px;
-                    padding: 0 40px 40px;
-                }
-                
-                .btn-prev-diagnostic,
-                .btn-next-diagnostic {
-                    padding: 15px 30px;
-                    border: none;
-                    border-radius: 12px;
-                    font-size: 16px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                }
-                
-                .btn-prev-diagnostic {
-                    background: #6c757d;
-                    color: white;
-                }
-                
-                .btn-prev-diagnostic:hover {
-                    background: #5a6268;
-                    transform: translateX(-3px);
-                }
-                
-                .btn-next-diagnostic {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                }
-                
-                .btn-next-diagnostic:hover {
-                    transform: translateX(3px);
-                    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-                }
-                
-                .solution-display {
-                    text-align: center;
-                    padding: 30px;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border-radius: 15px;
-                    margin: 20px 0;
-                    animation: fadeIn 0.5s ease;
-                }
-                
-                .solution-title {
-                    font-size: 24px;
-                    margin-bottom: 20px;
-                }
-                
-                .solution-description {
-                    font-size: 18px;
-                    line-height: 1.6;
-                    margin-bottom: 25px;
-                }
-                
-                .solution-actions {
-                    display: flex;
-                    justify-content: center;
-                    gap: 15px;
-                    margin-top: 25px;
-                }
-                
-                .action-btn {
-                    padding: 12px 25px;
-                    border: none;
-                    border-radius: 10px;
-                    font-size: 16px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.3s;
-                }
-                
-                .btn-save {
-                    background: white;
-                    color: #667eea;
-                }
-                
-                .btn-save:hover {
-                    background: #f8f9fa;
-                    transform: translateY(-2px);
-                    box-shadow: 0 5px 15px rgba(255,255,255,0.2);
-                }
-                
-                .btn-restart {
-                    background: rgba(255,255,255,0.2);
-                    color: white;
-                    border: 2px solid white;
-                }
-                
-                .btn-restart:hover {
-                    background: white;
-                    color: #667eea;
-                    transform: translateY(-2px);
-                }
-                
-                .scroll-controls {
-                    position: fixed;
-                    right: 30px;
-                    bottom: 30px;
-                    display: flex;
-                    flex-direction: column;
-                    gap: 10px;
-                    z-index: 1000;
-                }
-                
-                .scroll-controls button {
-                    width: 50px;
-                    height: 50px;
-                    border-radius: 50%;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    color: white;
-                    border: none;
-                    cursor: pointer;
-                    font-size: 20px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.3s;
-                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-                }
-                
-                .scroll-controls button:hover {
-                    transform: scale(1.1);
-                    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-                }
-                
-                .scroll-controls button:active {
-                    transform: scale(0.95);
-                }
-                
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: translateY(20px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                
-                /* Адаптивность */
-                @media (max-width: 768px) {
-                    .diagnostic-container {
-                        min-height: 500px;
-                    }
-                    
-                    .diagnostic-header {
-                        padding: 20px;
-                    }
-                    
-                    .diagnostic-body {
-                        padding: 20px;
-                        max-height: 400px;
-                    }
-                    
-                    .options-grid {
-                        grid-template-columns: 1fr;
-                    }
-                    
-                    .progress-step {
-                        width: 35px;
-                        height: 35px;
-                        font-size: 14px;
-                    }
-                    
-                    .navigation-buttons {
-                        flex-direction: column;
-                        gap: 15px;
-                        padding: 20px;
-                    }
-                    
-                    .scroll-controls {
-                        right: 15px;
-                        bottom: 15px;
-                    }
-                    
-                    .scroll-controls button {
-                        width: 40px;
-                        height: 40px;
-                        font-size: 16px;
-                    }
-                }
-                
-                /* Стили для скроллбара */
-                ::-webkit-scrollbar {
-                    width: 10px;
-                }
-                
-                ::-webkit-scrollbar-track {
-                    background: #f1f1f1;
-                    border-radius: 5px;
-                }
-                
-                ::-webkit-scrollbar-thumb {
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    border-radius: 5px;
-                }
-                
-                ::-webkit-scrollbar-thumb:hover {
-                    background: linear-gradient(135deg, #5a6fd8 0%, #6a4290 100%);
-                }
-            </style>
-        </head>
-        <body>
-            <div class="diagnostic-container">
-                <div class="diagnostic-header">
-                    <button class="close-btn" onclick="window.close()">×</button>
-                    <h1 class="diagnostic-title">Диагностика проблем</h1>
-                    <p class="diagnostic-subtitle">Ответьте на несколько вопросов для получения точного решения</p>
-                </div>
-                
-                <div class="progress-bar">
-                    <div class="progress-step active">1</div>
-                    <div class="progress-step">2</div>
-                    <div class="progress-step">3</div>
-                    <div class="progress-step">4</div>
-                </div>
-                
-                <div class="diagnostic-body" id="diagnostic-body">
-                    <!-- Шаг 1: Выбор проблемы -->
-                    <div class="diagnostic-step active" id="step-1-d">
-                        <h2 class="step-title">Что у вас случилось?</h2>
-                        <p class="step-description">Выберите наиболее подходящий вариант из списка</p>
-                        <div class="options-grid">
-                            <button class="option-btn" data-problem="crash" data-next="step-2-d">Программа вылетает или зависает</button>
-                            <button class="option-btn" data-problem="performance" data-next="step-2-d">Низкая производительность</button>
-                            <button class="option-btn" data-problem="connection" data-next="step-2-d">Проблемы с подключением</button>
-                            <button class="option-btn" data-problem="error" data-next="step-2-d">Появляются ошибки</button>
-                            <button class="option-btn" data-problem="update" data-next="step-2-d">Проблемы с обновлением</button>
-                            <button class="option-btn" data-problem="other" data-next="step-2-d">Другая проблема</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Шаг 2: Выбор локализации -->
-                    <div class="diagnostic-step" id="step-2-d">
-                        <h2 class="step-title">Где возникает проблема?</h2>
-                        <p class="step-description">Уточните место возникновения неполадки</p>
-                        <div class="options-grid">
-                            <button class="option-btn" data-solution="ui">В пользовательском интерфейсе</button>
-                            <button class="option-btn" data-solution="backend">В фоновых процессах</button>
-                            <button class="option-btn" data-solution="specific">В определенном модуле</button>
-                            <button class="option-btn" data-solution="everywhere">Во всей программе</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Шаг 3: Выбор длительности -->
-                    <div class="diagnostic-step" id="step-3-d">
-                        <h2 class="step-title">Как давно возникла проблема?</h2>
-                        <p class="step-description">Это поможет определить возможные причины</p>
-                        <div class="options-grid">
-                            <button class="option-btn" data-solution="recent">Недавно (после обновления)</button>
-                            <button class="option-btn" data-solution="always">Всегда была</button>
-                            <button class="option-btn" data-solution="intermittent">Периодически возникает</button>
-                            <button class="option-btn" data-solution="gradual">Постепенно ухудшается</button>
-                        </div>
-                    </div>
-                    
-                    <!-- Шаг 4: Результат -->
-                    <div class="diagnostic-step" id="solution-display">
-                        <h2 class="step-title">Результат диагностики</h2>
-                        <div class="solution-display">
-                            <h3 class="solution-title">Рекомендуемое решение</h3>
-                            <p class="solution-description" id="solution-text">Здесь будет отображено решение вашей проблемы</p>
-                            <div class="solution-actions">
-                                <button class="action-btn btn-save" id="save-diagnostic">Сохранить результат</button>
-                                <button class="action-btn btn-restart" id="restart-diagnostic">Начать заново</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="navigation-buttons">
-                    <button class="btn-prev-diagnostic">← Назад</button>
-                    <div style="width: 100px;"></div> <!-- Пустой блок для центрирования -->
-                </div>
-                
-                <!-- Кнопки прокрутки -->
-                <div class="scroll-controls" style="display: none;">
-                    <button id="scroll-top" title="В начало">⇈</button>
-                    <button id="scroll-up" title="Прокрутить вверх">↑</button>
-                    <button id="scroll-down" title="Прокрутить вниз">↓</button>
-                    <button id="scroll-bottom" title="В конец">⇊</button>
-                </div>
-            </div>
-            
-            <script>
-                // Инициализация переменных
-                let currentStep = 1;
-                let diagnosticData = {
-                    problem: null,
-                    location: null,
-                    duration: null
-                };
-                
-                const solutions = {
-                    crash: {
-                        ui: "Переустановите графические драйверы и проверьте настройки отображения",
-                        backend: "Проверьте системные ресурсы и закройте фоновые процессы",
-                        specific: "Обновите проблемный модуль или отключите его временно",
-                        everywhere: "Выполните полную переустановку программы"
-                    },
-                    performance: {
-                        recent: "Откатите последнее обновление или проверьте системные требования",
-                        always: "Рассмотрите возможность обновления оборудования",
-                        intermittent: "Проверьте фоновые процессы и очистите кэш",
-                        gradual: "Очистите системный мусор и дефрагментируйте диск"
-                    },
-                    connection: {
-                        recent: "Проверьте настройки сети после обновления",
-                        always: "Проверьте сетевое оборудование и настройки",
-                        intermittent: "Обновите сетевые драйверы",
-                        gradual: "Проверьте кабели и соединения"
-                    }
-                };
-                
-                // Функция для обновления прогресса
-                function updateDiagnosticProgress(step) {
-                    document.querySelectorAll('.progress-step').forEach((el, index) => {
-                        if (index < step) {
-                            el.classList.add('active');
-                        } else {
-                            el.classList.remove('active');
-                        }
-                    });
-                }
-                
-                // Функция для показа результата
-                function showDiagnosticResult(data) {
-                    const resultStep = document.getElementById('solution-display');
-                    const solutionText = document.getElementById('solution-text');
-                    
-                    // Переключаем на шаг с результатом
+                if (nextStep) {
+                    // Переход к следующему шагу
                     document.querySelector('.diagnostic-step.active').classList.remove('active');
-                    resultStep.classList.add('active');
-                    currentStep = 4;
-                    updateDiagnosticProgress(4);
+                    document.getElementById(nextStep).classList.add('active');
+                    currentStep = parseInt(nextStep.split('-')[1]);
                     
-                    // Определяем решение на основе данных
-                    let solution = "На основе ваших ответов рекомендуем:\n\n";
+                    // Обновляем прогресс
+                    this.updateDiagnosticProgress(currentStep);
                     
-                    if (data.problem === 'crash') {
-                        solution += "• Проверить целостность системных файлов\n";
-                        solution += "• Обновить драйверы устройств\n";
-                        solution += "• Проверить антивирусное ПО\n";
-                    } else if (data.problem === 'performance') {
-                        solution += "• Очистить временные файлы\n";
-                        solution += "• Проверить автозагрузку программ\n";
-                        solution += "• Обновить оперативную память\n";
-                    } else if (data.problem === 'connection') {
-                        solution += "• Перезагрузить роутер\n";
-                        solution += "• Проверить настройки брандмауэра\n";
-                        solution += "• Обновить сетевые драйверы\n";
-                    } else {
-                        solution += "• Обратиться в техническую поддержку\n";
-                        solution += "• Предоставить подробное описание проблемы\n";
-                        solution += "• Приложить скриншоты ошибок\n";
+                    if (nextStep === 'step-2-d') {
+                        diagnosticData.location = null;
+                    } else if (nextStep === 'step-3-d') {
+                        diagnosticData.duration = null;
                     }
-                    
-                    solutionText.textContent = solution;
-                    
-                    // Прокручиваем к началу
-                    setTimeout(() => {
-                        document.getElementById('diagnostic-body').scrollTo({
-                            top: 0,
-                            behavior: 'smooth'
-                        });
-                    }, 100);
-                }
-                
-                // Функция для сброса диагностики
-                function resetDiagnostic() {
-                    document.querySelectorAll('.diagnostic-step').forEach(step => {
-                        step.classList.remove('active');
-                    });
-                    document.getElementById('step-1-d').classList.add('active');
-                    document.getElementById('solution-display').classList.remove('active');
-                    currentStep = 1;
-                    diagnosticData = { problem: null, location: null, duration: null };
-                    updateDiagnosticProgress(1);
-                }
-                
-                // Функция для сохранения результата
-                function saveDiagnosticResult(data) {
-                    const result = {
-                        ...data,
-                        timestamp: new Date().toISOString(),
-                        solution: document.getElementById('solution-text').textContent
-                    };
-                    
-                    // Отправляем результат в родительское окно
-                    if (window.opener && !window.opener.closed) {
-                        window.opener.postMessage({
-                            type: 'DIAGNOSTIC_RESULT',
-                            data: result
-                        }, '*');
+                } else if (solution) {
+                    // Завершение диагностики
+                    if (currentStep === 2) {
+                        diagnosticData.location = solution;
+                        document.querySelector('.diagnostic-step.active').classList.remove('active');
+                        document.getElementById('step-3-d').classList.add('active');
+                        currentStep = 3;
+                        this.updateDiagnosticProgress(currentStep);
+                    } else if (currentStep === 3) {
+                        diagnosticData.duration = solution;
+                        this.showDiagnosticResult(diagnosticData);
                     }
-                    
-                    // Сохраняем в localStorage
-                    localStorage.setItem('lastDiagnostic', JSON.stringify(result));
-                    
-                    alert('Результат диагностики сохранен!');
                 }
-                
-                // Настройка прокрутки
-                function setupScrollControls() {
-                    const diagnosticBody = document.getElementById('diagnostic-body');
-                    const scrollControls = document.querySelector('.scroll-controls');
-                    
-                    if (!diagnosticBody || !scrollControls) return;
-                    
-                    // Проверяем, нужна ли прокрутка
-                    const checkScrollNeeded = () => {
-                        return diagnosticBody.scrollHeight > diagnosticBody.clientHeight;
-                    };
-                    
-                    // Функции прокрутки
-                    const scrollDown = () => diagnosticBody.scrollBy({ top: 100, behavior: 'smooth' });
-                    const scrollUp = () => diagnosticBody.scrollBy({ top: -100, behavior: 'smooth' });
-                    const scrollToTop = () => diagnosticBody.scrollTo({ top: 0, behavior: 'smooth' });
-                    const scrollToBottom = () => diagnosticBody.scrollTo({ top: diagnosticBody.scrollHeight, behavior: 'smooth' });
-                    
-                    // Вешаем обработчики на кнопки
-                    document.getElementById('scroll-up').addEventListener('click', scrollUp);
-                    document.getElementById('scroll-down').addEventListener('click', scrollDown);
-                    document.getElementById('scroll-top').addEventListener('click', scrollToTop);
-                    document.getElementById('scroll-bottom').addEventListener('click', scrollToBottom);
-                    
-                    // Обновляем видимость кнопок
-                    const updateScrollButtons = () => {
-                        scrollControls.style.display = checkScrollNeeded() ? 'flex' : 'none';
-                    };
-                    
-                    // Обработчики событий
-                    window.addEventListener('resize', updateScrollButtons);
-                    diagnosticBody.addEventListener('scroll', updateScrollButtons);
-                    
-                    // Клавиатурные команды
-                    document.addEventListener('keydown', (e) => {
-                        switch(e.key) {
-                            case 'ArrowDown':
-                                e.preventDefault();
-                                scrollDown();
-                                break;
-                            case 'ArrowUp':
-                                e.preventDefault();
-                                scrollUp();
-                                break;
-                            case 'Home':
-                                e.preventDefault();
-                                scrollToTop();
-                                break;
-                            case 'End':
-                                e.preventDefault();
-                                scrollToBottom();
-                                break;
-                        }
-                    });
-                    
-                    // Инициализация
-                    setTimeout(updateScrollButtons, 100);
+            });
+        });
+        
+        // Кнопки "Назад"
+        prevDiagnosticBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (currentStep > 1) {
+                    document.querySelector('.diagnostic-step.active').classList.remove('active');
+                    const prevStep = `step-${currentStep - 1}-d`;
+                    document.getElementById(prevStep).classList.add('active');
+                    currentStep--;
+                    this.updateDiagnosticProgress(currentStep);
                 }
-                
-                // Инициализация при загрузке
-                document.addEventListener('DOMContentLoaded', function() {
-                    // Обработка выбора опций
-                    document.querySelectorAll('.option-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
-                            const nextStep = this.getAttribute('data-next');
-                            const solution = this.getAttribute('data-solution');
-                            const problem = this.getAttribute('data-problem');
-                            
-                            if (problem) {
-                                diagnosticData.problem = problem;
-                            }
-                            
-                            if (nextStep) {
-                                document.querySelector('.diagnostic-step.active').classList.remove('active');
-                                document.getElementById(nextStep).classList.add('active');
-                                currentStep = parseInt(nextStep.split('-')[1]);
-                                updateDiagnosticProgress(currentStep);
-                            } else if (solution) {
-                                if (currentStep === 2) {
-                                    diagnosticData.location = solution;
-                                    document.querySelector('.diagnostic-step.active').classList.remove('active');
-                                    document.getElementById('step-3-d').classList.add('active');
-                                    currentStep = 3;
-                                    updateDiagnosticProgress(3);
-                                } else if (currentStep === 3) {
-                                    diagnosticData.duration = solution;
-                                    showDiagnosticResult(diagnosticData);
-                                }
-                            }
-                            
-                            // Прокручиваем к началу
-                            setTimeout(() => {
-                                document.getElementById('diagnostic-body').scrollTo({
-                                    top: 0,
-                                    behavior: 'smooth'
-                                });
-                            }, 100);
-                        });
-                    });
-                    
-                    // Кнопка "Назад"
-                    document.querySelector('.btn-prev-diagnostic').addEventListener('click', function() {
-                        if (currentStep > 1) {
-                            document.querySelector('.diagnostic-step.active').classList.remove('active');
-                            const prevStep = \`step-\${currentStep - 1}-d\`;
-                            document.getElementById(prevStep).classList.add('active');
-                            currentStep--;
-                            updateDiagnosticProgress(currentStep);
-                        }
-                    });
-                    
-                    // Кнопка "Начать заново"
-                    document.getElementById('restart-diagnostic').addEventListener('click', resetDiagnostic);
-                    
-                    // Кнопка "Сохранить результат"
-                    document.getElementById('save-diagnostic').addEventListener('click', () => saveDiagnosticResult(diagnosticData));
-                    
-                    // Инициализация прокрутки
-                    setupScrollControls();
-                });
-            </script>
-        </body>
-        </html>
-        `;
-    };
-    
-    // Функция открытия нового окна с диагностикой
-    const openDiagnosticWindow = () => {
-        // Проверяем, не открыто ли уже окно
-        if (diagnosticWindow && !diagnosticWindow.closed) {
-            diagnosticWindow.focus();
-            return;
+            });
+        });
+        
+        // Кнопка "Начать заново"
+        if (restartBtn) {
+            restartBtn.addEventListener('click', () => {
+                this.resetDiagnostic();
+            });
         }
         
-        // Открываем новое окно
-        diagnosticWindow = window.open('', 'diagnosticWindow', 
-            'width=900,height=700,left=100,top=100,resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=no'
-        );
-        
-        if (!diagnosticWindow) {
-            alert('Пожалуйста, разрешите всплывающие окна для этого сайта');
-            return;
+        // Сохранение результата диагностики
+        if (saveDiagnosticBtn) {
+            saveDiagnosticBtn.addEventListener('click', () => {
+                this.saveDiagnosticResult(diagnosticData);
+            });
         }
-        
-        // Записываем HTML в новое окно
-        diagnosticWindow.document.write(getDiagnosticHTML());
-        diagnosticWindow.document.close();
-        
-        // Добавляем обработчик сообщений от дочернего окна
-        window.addEventListener('message', function(event) {
-            if (event.data.type === 'DIAGNOSTIC_RESULT') {
-                console.log('Получен результат диагностики:', event.data.data);
-                // Здесь можно обработать результат в основном окне
-                this.showDiagnosticResultInMain(event.data.data);
+    },
+    
+    // Обновление прогресса диагностики
+    updateDiagnosticProgress: function(step) {
+        document.querySelectorAll('.progress-step').forEach((el, index) => {
+            if (index < step) {
+                el.classList.add('active');
+            } else {
+                el.classList.remove('active');
             }
-        }.bind(this));
-        
-        // Следим за закрытием окна
-        const checkWindow = setInterval(() => {
-            if (diagnosticWindow && diagnosticWindow.closed) {
-                clearInterval(checkWindow);
-                diagnosticWindow = null;
-                currentStep = 1;
-                diagnosticData = { problem: null, location: null, duration: null };
-            }
-        }, 500);
-    };
+        });
+    },
     
-    // Функция для отображения результата в основном окне (если нужно)
-    showDiagnosticResultInMain: function(data) {
-        console.log('Результат диагностики сохранен:', data);
-        // Здесь можно добавить логику для отображения результата в основном окне
-        alert('Результат диагностики получен и сохранен в системе');
-    };
-    
-    // Привязываем события к кнопкам
-    if (startDiagnosticBtn) {
-        startDiagnosticBtn.addEventListener('click', openDiagnosticWindow);
-    }
-    
-    diagnosticOpenBtns.forEach(btn => {
-        btn.addEventListener('click', openDiagnosticWindow);
-    });
-},
+    // Сброс диагностики
+    resetDiagnostic: function() {
+        document.querySelectorAll('.diagnostic-step').forEach(step => {
+            step.classList.remove('active');
+        });
+        document.getElementById('step-1-d').classList.add('active');
+        document.getElementById('solution-display').classList.add('hidden');
+        currentStep = 1;
+        this.updateDiagnosticProgress(1);
+    },
     
     // Показ результата диагностики
     showDiagnosticResult: function(data) {
@@ -2310,5 +1665,6 @@ document.addEventListener('DOMContentLoaded', () => {
     HydroHelper.init();
 
 });
+
 
 

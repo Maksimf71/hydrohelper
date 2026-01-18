@@ -684,7 +684,13 @@ const HydroHelper = {
                 difficulty: 'Средняя',
                 harvest: '10-14 недель',
                 tips: 'Любит прохладу. Нужно опыление (можно вручную кисточкой).'
-            }
+            },
+            strawberries: {
+                name: 'Земляника',
+                system: 'Система питательного слоя (NFT)',
+                difficulty: 'Средняя',
+                harvest: '8-12 недель',
+                tips: 'Любит прохладу. Нужно опыление (можно вручную кисточкой).'
         };
         
         const locationData = {
@@ -695,9 +701,9 @@ const HydroHelper = {
         };
         
         const budgetData = {
-            minimal: 'Минимальный (до 3000₽)',
-            medium: 'Средний (3000-10000₽)',
-            unlimited: 'Неограниченный'
+            minimal: 'Минимальный (до 5000₽)',
+            medium: 'Средний (5000-15000₽)',
+            unlimited: 'Неограниченный (от 15 000₽)'
         };
         
         const plant = plantData[this.userSelections.plant] || plantData.lettuce;
@@ -732,8 +738,8 @@ const HydroHelper = {
         // Базовые материалы для всех
         materials.push('Емкость для раствора (10-20 л)');
         materials.push('Субстрат (кокосовое волокно или керамзит)');
-        materials.push('Удобрения для гидропоники (А и Б)');
-        materials.push('Семена или рассада');
+        materials.push('Удобрения для гидропоники (А и В)');
+        materials.push('Семена, желательно, выбирать адаптированные для гидропоники);
         materials.push('pH-тест (жидкость или полоски)');
         
         // Дополнительные материалы в зависимости от бюджета
@@ -741,6 +747,7 @@ const HydroHelper = {
             materials.push('Пластиковые стаканчики с отверстиями');
             materials.push('Воздушный компрессор для аквариума (для DWC)');
         } else if (this.userSelections.budget === 'medium') {
+            materials.push('Диски для проростания семян (кокосовые)');
             materials.push('Горшки для гидропоники (сетчатые)');
             materials.push('Насос и таймер (для периодического затопления)');
             materials.push('Фитолампа (если мало естественного света)');
@@ -794,7 +801,8 @@ const HydroHelper = {
             lettuce: 'Салат',
             herbs: 'Пряные травы',
             tomato: 'Томаты',
-            strawberry: 'Клубника'
+            strawberry: 'Клубника',
+            strawberries: 'Земляника'
         };
         
         const plantName = plantNames[this.userSelections.plant] || 'Мое растение';
@@ -895,6 +903,7 @@ const HydroHelper = {
             if (plant.type === 'herbs') plantIcon = 'fas fa-spa';
             else if (plant.type === 'tomato') plantIcon = 'fas fa-apple-alt';
             else if (plant.type === 'strawberry') plantIcon = 'fas fa-star';
+            else if (plant.type === 'strawberries') plantIcon = 'fas fa-straw';
             
             const plantCard = document.createElement('div');
             plantCard.className = 'plant-card';
@@ -1018,143 +1027,360 @@ const HydroHelper = {
         this.showNotification('Растение удалено', 'info');
     },
     
-    // Настройка диагностики
-    setupDiagnostic: function() {
-        const diagnosticModal = document.getElementById('diagnostic-modal');
-        const startDiagnosticBtn = document.getElementById('start-diagnostic');
-        const diagnosticOpenBtns = document.querySelectorAll('.diagnostic-open');
-        const diagnosticClose = document.querySelector('.diagnostic-close');
-        const optionBtns = document.querySelectorAll('.diagnostic-step .option-btn');
-        const prevDiagnosticBtns = document.querySelectorAll('.btn-prev-diagnostic');
-        const restartBtn = document.getElementById('restart-diagnostic');
-        const saveDiagnosticBtn = document.getElementById('save-diagnostic');
+   // Настройка диагностики
+setupDiagnostic: function() {
+    const diagnosticModal = document.getElementById('diagnostic-modal');
+    const startDiagnosticBtn = document.getElementById('start-diagnostic');
+    const diagnosticOpenBtns = document.querySelectorAll('.diagnostic-open');
+    const diagnosticClose = document.querySelector('.diagnostic-close');
+    const optionBtns = document.querySelectorAll('.diagnostic-step .option-btn');
+    const prevDiagnosticBtns = document.querySelectorAll('.btn-prev-diagnostic');
+    const restartBtn = document.getElementById('restart-diagnostic');
+    const saveDiagnosticBtn = document.getElementById('save-diagnostic');
+    
+    let currentStep = 1;
+    let diagnosticData = {
+        problem: null,
+        location: null,
+        duration: null
+    };
+    
+    // Функция для прокрутки в диагностическом окне
+    const setupDiagnosticScroll = () => {
+        const diagnosticContent = diagnosticModal.querySelector('.diagnostic-content');
+        const diagnosticBody = diagnosticModal.querySelector('.diagnostic-body');
         
-        let currentStep = 1;
-        let diagnosticData = {
-            problem: null,
-            location: null,
-            duration: null
+        if (!diagnosticContent || !diagnosticBody) return;
+        
+        // Проверяем, нужна ли прокрутка
+        const checkScrollNeeded = () => {
+            return diagnosticBody.scrollHeight > diagnosticContent.clientHeight;
         };
         
-        // Открытие диагностики
-        const openDiagnostic = () => {
-            diagnosticModal.classList.remove('hidden');
-            currentStep = 1;
-            diagnosticData = { problem: null, location: null, duration: null };
-            this.resetDiagnostic();
-        };
-        
-        if (startDiagnosticBtn) {
-            startDiagnosticBtn.addEventListener('click', openDiagnostic);
-        }
-        
-        diagnosticOpenBtns.forEach(btn => {
-            btn.addEventListener('click', openDiagnostic);
-        });
-        
-        // Закрытие диагностики
-        if (diagnosticClose) {
-            diagnosticClose.addEventListener('click', () => {
-                diagnosticModal.classList.add('hidden');
+        // Прокрутка вниз
+        const scrollDown = () => {
+            diagnosticBody.scrollBy({
+                top: 100,
+                behavior: 'smooth'
             });
-        }
+        };
         
+        // Прокрутка вверх
+        const scrollUp = () => {
+            diagnosticBody.scrollBy({
+                top: -100,
+                behavior: 'smooth'
+            });
+        };
+        
+        // Прокрутка в начало
+        const scrollToTop = () => {
+            diagnosticBody.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        };
+        
+        // Прокрутка в конец
+        const scrollToBottom = () => {
+            diagnosticBody.scrollTo({
+                top: diagnosticBody.scrollHeight,
+                behavior: 'smooth'
+            });
+        };
+        
+        // Добавляем кнопки прокрутки
+        const addScrollButtons = () => {
+            // Проверяем, есть ли уже кнопки
+            if (diagnosticModal.querySelector('.scroll-controls')) return;
+            
+            // Создаем контейнер для кнопок прокрутки
+            const scrollControls = document.createElement('div');
+            scrollControls.className = 'scroll-controls';
+            scrollControls.style.cssText = `
+                position: absolute;
+                right: 20px;
+                bottom: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                z-index: 1000;
+            `;
+            
+            // Создаем кнопки
+            const buttons = [
+                { id: 'scroll-up', text: '↑', title: 'Прокрутить вверх', action: scrollUp },
+                { id: 'scroll-down', text: '↓', title: 'Прокрутить вниз', action: scrollDown },
+                { id: 'scroll-top', text: '⇈', title: 'В начало', action: scrollToTop },
+                { id: 'scroll-bottom', text: '⇊', title: 'В конец', action: scrollToBottom }
+            ];
+            
+            buttons.forEach(btn => {
+                const button = document.createElement('button');
+                button.id = btn.id;
+                button.textContent = btn.text;
+                button.title = btn.title;
+                button.style.cssText = `
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: rgba(59, 130, 246, 0.9);
+                    color: white;
+                    border: none;
+                    cursor: pointer;
+                    font-size: 18px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.3s;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                `;
+                
+                button.addEventListener('mouseenter', () => {
+                    button.style.background = 'rgba(37, 99, 235, 1)';
+                    button.style.transform = 'scale(1.1)';
+                });
+                
+                button.addEventListener('mouseleave', () => {
+                    button.style.background = 'rgba(59, 130, 246, 0.9)';
+                    button.style.transform = 'scale(1)';
+                });
+                
+                button.addEventListener('click', btn.action);
+                scrollControls.appendChild(button);
+            });
+            
+            diagnosticContent.appendChild(scrollControls);
+            
+            // Показываем/скрываем кнопки в зависимости от необходимости прокрутки
+            const updateScrollButtons = () => {
+                const isScrollNeeded = checkScrollNeeded();
+                scrollControls.style.display = isScrollNeeded ? 'flex' : 'none';
+            };
+            
+            // Обновляем при изменении размера окна
+            window.addEventListener('resize', updateScrollButtons);
+            
+            // Проверяем при открытии диагностики
+            setTimeout(updateScrollButtons, 100);
+            
+            // Добавляем обработчик wheel для прокрутки колесиком мыши
+            diagnosticBody.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                diagnosticBody.scrollBy({
+                    top: e.deltaY > 0 ? 50 : -50,
+                    behavior: 'smooth'
+                });
+            }, { passive: false });
+            
+            // Добавляем клавиатурные команды
+            diagnosticModal.addEventListener('keydown', (e) => {
+                if (!diagnosticModal.classList.contains('hidden')) {
+                    switch(e.key) {
+                        case 'ArrowDown':
+                            e.preventDefault();
+                            scrollDown();
+                            break;
+                        case 'ArrowUp':
+                            e.preventDefault();
+                            scrollUp();
+                            break;
+                        case 'Home':
+                            e.preventDefault();
+                            scrollToTop();
+                            break;
+                        case 'End':
+                            e.preventDefault();
+                            scrollToBottom();
+                            break;
+                        case 'PageDown':
+                            e.preventDefault();
+                            diagnosticBody.scrollBy({
+                                top: diagnosticBody.clientHeight - 50,
+                                behavior: 'smooth'
+                            });
+                            break;
+                        case 'PageUp':
+                            e.preventDefault();
+                            diagnosticBody.scrollBy({
+                                top: -(diagnosticBody.clientHeight - 50),
+                                behavior: 'smooth'
+                            });
+                            break;
+                    }
+                }
+            });
+            
+            return scrollControls;
+        };
+        
+        // Добавляем кнопки при открытии
         diagnosticModal.addEventListener('click', (e) => {
-            if (e.target === diagnosticModal) {
-                diagnosticModal.classList.add('hidden');
+            if (e.target === startDiagnosticBtn || 
+                Array.from(diagnosticOpenBtns).includes(e.target) ||
+                e.target.closest('.diagnostic-open')) {
+                setTimeout(() => {
+                    const controls = addScrollButtons();
+                    if (controls) {
+                        controls.style.display = 'flex';
+                    }
+                }, 50);
             }
         });
-        
-        // Обработка выбора в диагностике
-        optionBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const nextStep = btn.getAttribute('data-next');
-                const solution = btn.getAttribute('data-solution');
-                const problem = btn.getAttribute('data-problem');
-                
-                if (problem) {
-                    diagnosticData.problem = problem;
-                }
-                
-                if (nextStep) {
-                    // Переход к следующему шагу
-                    document.querySelector('.diagnostic-step.active').classList.remove('active');
-                    document.getElementById(nextStep).classList.add('active');
-                    currentStep = parseInt(nextStep.split('-')[1]);
-                    
-                    // Обновляем прогресс
-                    this.updateDiagnosticProgress(currentStep);
-                    
-                    if (nextStep === 'step-2-d') {
-                        diagnosticData.location = null;
-                    } else if (nextStep === 'step-3-d') {
-                        diagnosticData.duration = null;
-                    }
-                } else if (solution) {
-                    // Завершение диагностики
-                    if (currentStep === 2) {
-                        diagnosticData.location = solution;
-                        document.querySelector('.diagnostic-step.active').classList.remove('active');
-                        document.getElementById('step-3-d').classList.add('active');
-                        currentStep = 3;
-                        this.updateDiagnosticProgress(currentStep);
-                    } else if (currentStep === 3) {
-                        diagnosticData.duration = solution;
-                        this.showDiagnosticResult(diagnosticData);
-                    }
-                }
-            });
-        });
-        
-        // Кнопки "Назад"
-        prevDiagnosticBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (currentStep > 1) {
-                    document.querySelector('.diagnostic-step.active').classList.remove('active');
-                    const prevStep = `step-${currentStep - 1}-d`;
-                    document.getElementById(prevStep).classList.add('active');
-                    currentStep--;
-                    this.updateDiagnosticProgress(currentStep);
-                }
-            });
-        });
-        
-        // Кнопка "Начать заново"
-        if (restartBtn) {
-            restartBtn.addEventListener('click', () => {
-                this.resetDiagnostic();
-            });
-        }
-        
-        // Сохранение результата диагностики
-        if (saveDiagnosticBtn) {
-            saveDiagnosticBtn.addEventListener('click', () => {
-                this.saveDiagnosticResult(diagnosticData);
-            });
-        }
-    },
+    };
     
-    // Обновление прогресса диагностики
-    updateDiagnosticProgress: function(step) {
-        document.querySelectorAll('.progress-step').forEach((el, index) => {
-            if (index < step) {
-                el.classList.add('active');
-            } else {
-                el.classList.remove('active');
-            }
-        });
-    },
+    // Инициализируем прокрутку при загрузке
+    setTimeout(setupDiagnosticScroll, 100);
     
-    // Сброс диагностики
-    resetDiagnostic: function() {
-        document.querySelectorAll('.diagnostic-step').forEach(step => {
-            step.classList.remove('active');
-        });
-        document.getElementById('step-1-d').classList.add('active');
-        document.getElementById('solution-display').classList.add('hidden');
+    // Открытие диагностики
+    const openDiagnostic = () => {
+        diagnosticModal.classList.remove('hidden');
         currentStep = 1;
-        this.updateDiagnosticProgress(1);
-    },
+        diagnosticData = { problem: null, location: null, duration: null };
+        this.resetDiagnostic();
+        
+        // Инициализируем прокрутку после открытия
+        setTimeout(() => {
+            const diagnosticBody = diagnosticModal.querySelector('.diagnostic-body');
+            if (diagnosticBody) {
+                diagnosticBody.scrollTop = 0;
+            }
+        }, 50);
+    };
+    
+    if (startDiagnosticBtn) {
+        startDiagnosticBtn.addEventListener('click', openDiagnostic);
+    }
+    
+    diagnosticOpenBtns.forEach(btn => {
+        btn.addEventListener('click', openDiagnostic);
+    });
+    
+    // Закрытие диагностики
+    if (diagnosticClose) {
+        diagnosticClose.addEventListener('click', () => {
+            diagnosticModal.classList.add('hidden');
+        });
+    }
+    
+    diagnosticModal.addEventListener('click', (e) => {
+        if (e.target === diagnosticModal) {
+            diagnosticModal.classList.add('hidden');
+        }
+    });
+    
+    // Обработка выбора в диагностике
+    optionBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const nextStep = btn.getAttribute('data-next');
+            const solution = btn.getAttribute('data-solution');
+            const problem = btn.getAttribute('data-problem');
+            
+            if (problem) {
+                diagnosticData.problem = problem;
+            }
+            
+            if (nextStep) {
+                // Переход к следующему шагу
+                document.querySelector('.diagnostic-step.active').classList.remove('active');
+                document.getElementById(nextStep).classList.add('active');
+                currentStep = parseInt(nextStep.split('-')[1]);
+                
+                // Обновляем прогресс
+                this.updateDiagnosticProgress(currentStep);
+                
+                // Прокручиваем к началу при смене шага
+                setTimeout(() => {
+                    const diagnosticBody = diagnosticModal.querySelector('.diagnostic-body');
+                    if (diagnosticBody) {
+                        diagnosticBody.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    }
+                }, 100);
+                
+                if (nextStep === 'step-2-d') {
+                    diagnosticData.location = null;
+                } else if (nextStep === 'step-3-d') {
+                    diagnosticData.duration = null;
+                }
+            } else if (solution) {
+                // Завершение диагностики
+                if (currentStep === 2) {
+                    diagnosticData.location = solution;
+                    document.querySelector('.diagnostic-step.active').classList.remove('active');
+                    document.getElementById('step-3-d').classList.add('active');
+                    currentStep = 3;
+                    this.updateDiagnosticProgress(currentStep);
+                    
+                    // Прокручиваем к началу
+                    setTimeout(() => {
+                        const diagnosticBody = diagnosticModal.querySelector('.diagnostic-body');
+                        if (diagnosticBody) {
+                            diagnosticBody.scrollTo({
+                                top: 0,
+                                behavior: 'smooth'
+                            });
+                        }
+                    }, 100);
+                } else if (currentStep === 3) {
+                    diagnosticData.duration = solution;
+                    this.showDiagnosticResult(diagnosticData);
+                }
+            }
+        });
+    });
+    
+    // Кнопки "Назад"
+    prevDiagnosticBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (currentStep > 1) {
+                document.querySelector('.diagnostic-step.active').classList.remove('active');
+                const prevStep = `step-${currentStep - 1}-d`;
+                document.getElementById(prevStep).classList.add('active');
+                currentStep--;
+                this.updateDiagnosticProgress(currentStep);
+                
+                // Прокручиваем к началу при возврате
+                setTimeout(() => {
+                    const diagnosticBody = diagnosticModal.querySelector('.diagnostic-body');
+                    if (diagnosticBody) {
+                        diagnosticBody.scrollTo({
+                            top: 0,
+                            behavior: 'smooth'
+                        });
+                    }
+                }, 100);
+            }
+        });
+    });
+    
+    // Кнопка "Начать заново"
+    if (restartBtn) {
+        restartBtn.addEventListener('click', () => {
+            this.resetDiagnostic();
+            
+            // Прокручиваем к началу
+            setTimeout(() => {
+                const diagnosticBody = diagnosticModal.querySelector('.diagnostic-body');
+                if (diagnosticBody) {
+                    diagnosticBody.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
+            }, 100);
+        });
+    }
+    
+    // Сохранение результата диагностики
+    if (saveDiagnosticBtn) {
+        saveDiagnosticBtn.addEventListener('click', () => {
+            this.saveDiagnosticResult(diagnosticData);
+        });
+    }
+},
     
     // Показ результата диагностики
     showDiagnosticResult: function(data) {
@@ -1654,4 +1880,5 @@ const HydroHelper = {
 // Инициализация приложения после загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
     HydroHelper.init();
+
 });

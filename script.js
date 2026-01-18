@@ -802,7 +802,7 @@ const HydroHelper = {
             lettuce: 'Салат',
             herbs: 'Пряные травы',
             tomato: 'Томаты, перец',
-            strawberry: 'Клубника'
+            strawberry: 'Клубника',
             strawberries: 'Земланика'
         };
         
@@ -1665,3 +1665,4 @@ document.addEventListener('DOMContentLoaded', () => {
     HydroHelper.init();
 
 });
+

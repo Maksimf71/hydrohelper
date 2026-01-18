@@ -1028,18 +1028,23 @@ const HydroHelper = {
     },
     
   // Настройка диагностики
-setupDiagnostic: function() {
-    const startDiagnosticBtn = document.getElementById('start-diagnostic');
-    const diagnosticOpenBtns = document.querySelectorAll('.diagnostic-open');
-    
-    let diagnosticWindow = null;
-    let currentStep = 1;
-    let diagnosticData = {
-        problem: null,
-        location: null,
-        duration: null
-    };
-    
+    setupDiagnostic: function() {
+        const diagnosticModal = document.getElementById('diagnostic-modal');
+        const startDiagnosticBtn = document.getElementById('start-diagnostic');
+        const diagnosticOpenBtns = document.querySelectorAll('.diagnostic-open');
+        const diagnosticClose = document.querySelector('.diagnostic-close');
+        const optionBtns = document.querySelectorAll('.diagnostic-step .option-btn');
+        const prevDiagnosticBtns = document.querySelectorAll('.btn-prev-diagnostic');
+        const restartBtn = document.getElementById('restart-diagnostic');
+        const saveDiagnosticBtn = document.getElementById('save-diagnostic');
+        
+        let currentStep = 1;
+        let diagnosticData = {
+            problem: null,
+            location: null,
+            duration: null
+        };
+        
     // HTML содержимое для нового окна
     const getDiagnosticHTML = () => {
         return `
@@ -2305,4 +2310,5 @@ document.addEventListener('DOMContentLoaded', () => {
     HydroHelper.init();
 
 });
+
 

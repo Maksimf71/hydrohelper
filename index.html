@@ -415,6 +415,91 @@
                 </div>
             </div>
         </section>
+<!-- Модальное окно диагностики -->
+        <div id="diagnostic-modal" class="modal hidden">
+            <div class="modal-content diagnostic-modal">
+                <span class="modal-close diagnostic-close">&times;</span>
+                <h2><i class="fas fa-stethoscope"></i> Диагностика проблем</h2>
+                
+                <div class="diagnostic-progress">
+                    <div class="progress-step active" data-step="1"></div>
+                    <div class="progress-step" data-step="2"></div>
+                    <div class="progress-step" data-step="3"></div>
+                </div>
+                
+                <div class="diagnostic-step active" id="step-1-d">
+                    <h3>Что происходит с растением?</h3>
+                    <div class="options-vertical">
+                        <button class="option-btn" data-next="step-2-d" data-problem="yellow">
+                            <i class="fas fa-leaf"></i>
+                            <span>Листья желтеют</span>
+                        </button>
+                        <button class="option-btn" data-next="step-2-d" data-problem="wilted">
+                            <i class="fas fa-tint"></i>
+                            <span>Листья вялые</span>
+                        </button>
+                        <button class="option-btn" data-next="step-2-d" data-problem="spots">
+                            <i class="fas fa-circle"></i>
+                            <span>Пятна на листьях</span>
+                        </button>
+                        <button class="option-btn" data-next="step-2-d" data-problem="nogrowth">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Растение не растет</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="diagnostic-step" id="step-2-d">
+                    <h3>Где появляется проблема?</h3>
+                    <div class="options-vertical">
+                        <button class="option-btn" data-solution="nitrogen">
+                            <i class="fas fa-arrow-down"></i>
+                            <span>На старых листьях снизу</span>
+                        </button>
+                        <button class="option-btn" data-solution="light">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>На новых листьях сверху</span>
+                        </button>
+                        <button class="option-btn" data-solution="fungus">
+                            <i class="fas fa-expand"></i>
+                            <span>Везде равномерно</span>
+                        </button>
+                    </div>
+                    <button class="btn-prev-diagnostic"><i class="fas fa-arrow-left"></i> Назад</button>
+                </div>
+                
+                <div class="diagnostic-step" id="step-3-d">
+                    <h3>Как давно появилась проблема?</h3>
+                    <div class="options-vertical">
+                        <button class="option-btn" data-solution="recent">
+                            <i class="fas fa-clock"></i>
+                            <span>Недавно (1-2 дня)</span>
+                        </button>
+                        <button class="option-btn" data-solution="medium">
+                            <i class="fas fa-calendar-day"></i>
+                            <span>Несколько дней (3-7)</span>
+                        </button>
+                        <button class="option-btn" data-solution="long">
+                            <i class="fas fa-calendar-week"></i>
+                            <span>Долгое время (более недели)</span>
+                        </button>
+                    </div>
+                    <button class="btn-prev-diagnostic"><i class="fas fa-arrow-left"></i> Назад</button>
+                </div>
+                
+                <div class="diagnostic-solution hidden" id="solution-display">
+                    <div class="solution-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3>Рекомендация:</h3>
+                    <p id="solution-text"></p>
+                    <div class="solution-actions">
+                        <button class="btn-primary" id="save-diagnostic">Сохранить результат</button>
+                        <button class="btn-secondary" id="restart-diagnostic">Начать заново</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         
         <!-- Калькуляторы -->
@@ -552,6 +637,7 @@
 </body>
 
 </html>
+
 
 
 

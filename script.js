@@ -676,7 +676,7 @@ const HydroHelper = {
                 system: 'Система периодического затопления (Ebb & Flow), система капельного полива',
                 difficulty: 'Сложная',
                 harvest: 'C момента цветения от 8 до 12 недель',
-                tips++: 'Нужно больше света и пространства. Требует подвязки.'
+                tips: 'Нужно больше света и пространства. Требует подвязки.'
             },
             strawberry: {
                 name: 'Клубника',
@@ -1667,5 +1667,6 @@ document.addEventListener('DOMContentLoaded', () => {
     HydroHelper.init();
 
 });
+
 
 

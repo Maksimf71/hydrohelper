@@ -18,8 +18,22 @@ const HydroHelper = {
         plansSaved: 0
     },
     
+    // ДОБАВЬТЕ ЭТО - переменные для диагностики
+    currentDiagnosticStep: 1,
+    diagnosticData: {
+        problem: null,
+        location: null,
+        duration: null
+    },
+    
     // Инициализация приложения
     init: function() {
+         // Проверка, что DOM загружен
+    if (!document.getElementById('login-btn')) {
+        console.error('DOM элементы не найдены. Проверьте структуру HTML.');
+        return;
+    }
+        this.loadData();
         this.loadData();
         this.checkAuth();
         this.setupEventListeners();
@@ -1157,15 +1171,23 @@ const HydroHelper = {
     },
     
     // Сброс диагностики
-    resetDiagnostic: function() {
-        document.querySelectorAll('.diagnostic-step').forEach(step => {
-            step.classList.remove('active');
-        });
-        document.getElementById('step-1-d').classList.add('active');
-        document.getElementById('solution-display').classList.add('hidden');
-        currentStep = 1;
-        this.updateDiagnosticProgress(1);
-    },
+   resetDiagnostic: function() {
+    document.querySelectorAll('.diagnostic-step').forEach(step => {
+        step.classList.remove('active');
+    });
+    document.getElementById('step-1-d').classList.add('active');
+    document.getElementById('solution-display').classList.add('hidden');
+    
+    // Используйте this для доступа к свойствам
+    this.currentDiagnosticStep = 1;
+    this.diagnosticData = {
+        problem: null,
+        location: null,
+        duration: null
+    };
+    
+    this.updateDiagnosticProgress(1);
+},
     
     // Показ результата диагностики
     showDiagnosticResult: function(data) {
@@ -1667,6 +1689,7 @@ document.addEventListener('DOMContentLoaded', () => {
     HydroHelper.init();
 
 });
+
 
 
 
